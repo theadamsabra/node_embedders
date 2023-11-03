@@ -15,6 +15,7 @@ class DeepWalk:
             - seed (int): random seed. default set to 36.
         '''
         self.G = G
+        self.vertices = self.G.vertices()
         self.win_size = win_size
         self.embedding_size = embedding_size
         self.walks_per_vertex = walks_per_vertex
@@ -28,6 +29,9 @@ class DeepWalk:
             size = (len(self.G), self.embedding_size)
         )
 
+    def skipgram(self, phi, walk, win_size):
+        pass
+
     def _construct_binary_tree(self):
         pass
 
@@ -35,3 +39,11 @@ class DeepWalk:
         '''Main function run to calculate embedding matrix.'''
         self._init_vertex_representations()
         binary_tree = self._construct_binary_tree() 
+
+        # Main loop in question:
+        for walk_num in range(len(self.walks_per_vertex)):
+            # Shuffle V
+            # O = shuffle(V)
+            for vert_idx in range(len(O)):
+                walk = self.random_walk(self.G, self.vertices[vert_idx], self.walk_length)
+                self.skipgram(self.phi, walk, self.win_size)
