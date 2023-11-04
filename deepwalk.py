@@ -2,6 +2,15 @@ import torch
 import torch_geometric
 from torch_geometric.datasets import Flickr
 
+def SkipGram(phi, walk, win_size, optimizer):
+    for v_j, j in enumerate(walk):
+        for u_k in walk[j - win_size : j + win_size]:
+            # Calculate loss:
+            log_liklihood = None
+            # Update optimizer. TODO: implement from scratch
+            optimizer.step()
+        
+
 class DeepWalk:
     def __init__(self, G, win_size, embedding_size, walks_per_vertex, walk_length, seed=36) -> None:
         '''
@@ -29,10 +38,8 @@ class DeepWalk:
             size = (len(self.G), self.embedding_size)
         )
 
-    def skipgram(self, phi, walk, win_size):
-        pass
-
     def _construct_binary_tree(self):
+        '''I feel like this is just an adjacancy matrix.'''
         pass
 
     def calculate_embeddings(self):
@@ -46,4 +53,4 @@ class DeepWalk:
             # O = shuffle(V)
             for vert_idx in range(len(O)):
                 walk = self.random_walk(self.G, self.vertices[vert_idx], self.walk_length)
-                self.skipgram(self.phi, walk, self.win_size)
+                SkipGram(self.phi, walk, self.win_size)
