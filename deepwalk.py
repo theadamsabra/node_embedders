@@ -24,7 +24,8 @@ class DeepWalk:
             - seed (int): random seed. default set to 36.
         '''
         self.G = G
-        self.vertices = self.G.vertices()
+        self.num_vertices = self.G.x.shape[0]
+        self.edges = self.G.edge_index
         self.win_size = win_size
         self.embedding_size = embedding_size
         self.walks_per_vertex = walks_per_vertex
@@ -35,7 +36,7 @@ class DeepWalk:
         '''Initialize phi - or embedding matrix - to be optimized.'''
         torch_geometric.seed_everything(self.seed) 
         self.phi = torch.rand(
-            size = (len(self.G), self.embedding_size)
+            size = (self.num_vertices, self.embedding_size)
         )
 
     def _construct_binary_tree(self):
@@ -54,3 +55,9 @@ class DeepWalk:
             for vert_idx in range(len(O)):
                 walk = self.random_walk(self.G, self.vertices[vert_idx], self.walk_length)
                 SkipGram(self.phi, walk, self.win_size)
+
+# Used for debugging for now:
+# if __name__ == "__main__":
+#     G = Flickr('data/flickr')
+#     deepwalk = DeepWalk(G, 2, 1024, 10, 5)
+#     deepwalk.calculate_embeddings()
