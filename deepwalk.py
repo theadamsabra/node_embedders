@@ -12,15 +12,16 @@ def SkipGram(phi, walk, win_size, optimizer):
         
 
 class DeepWalk:
-    def __init__(self, G, win_size, embedding_size, walks_per_vertex, walk_length, seed=36) -> None:
+    def __init__(self, G, win_size, embedding_size, walks_per_vertex, walk_length, optimizer, seed=36) -> None:
         '''
         Core DeepWalk class. Contains main algorithm from paper including SkipGram.
         Inputs:
-            - G (): UNSURE OF GRAPH TYPE YET.   
+            - G (torch_geometric.data.Data): torch geometric data object.   
             - win_size (int): window size
             - embedding_size (int): embedding size of output representation
             - walks_per_vertex (int): number of walks per vertex
             - walk_length (int): random walk length
+            - optimizer (nn.Module): torch optimizer. should default to SGD as paper outlines.
             - seed (int): random seed. default set to 36.
         '''
         self.G = G
@@ -30,6 +31,7 @@ class DeepWalk:
         self.embedding_size = embedding_size
         self.walks_per_vertex = walks_per_vertex
         self.walk_length = walk_length
+        self.optimizer = optimizer
         self.seed = seed
 
     def _init_vertex_representations(self):
@@ -42,6 +44,10 @@ class DeepWalk:
     def _construct_binary_tree(self):
         '''I feel like this is just an adjacancy matrix.'''
         pass
+    
+    def _shuffle(self):
+        '''Shuffle vertices'''
+        return torch.randperm(self.num_vertices) 
 
     def calculate_embeddings(self):
         '''Main function run to calculate embedding matrix.'''
@@ -51,7 +57,7 @@ class DeepWalk:
         # Main loop in question:
         for walk_num in range(len(self.walks_per_vertex)):
             # Shuffle V
-            # O = shuffle(V)
+            O = self.shuffle()
             for vert_idx in range(len(O)):
                 walk = self.random_walk(self.G, self.vertices[vert_idx], self.walk_length)
                 SkipGram(self.phi, walk, self.win_size)
