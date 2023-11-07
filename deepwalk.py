@@ -1,5 +1,6 @@
 import torch
 import torch_geometric
+from torch import optim
 from torch_geometric.datasets import Flickr
 
 def SkipGram(phi, walk, win_size, optimizer):
@@ -12,7 +13,7 @@ def SkipGram(phi, walk, win_size, optimizer):
         
 
 class DeepWalk:
-    def __init__(self, G, win_size, embedding_size, walks_per_vertex, walk_length, optimizer, seed=36) -> None:
+    def __init__(self, G, win_size, embedding_size, walks_per_vertex, walk_length, seed=36) -> None:
         '''
         Core DeepWalk class. Contains main algorithm from paper including SkipGram.
         Inputs:
@@ -21,7 +22,6 @@ class DeepWalk:
             - embedding_size (int): embedding size of output representation
             - walks_per_vertex (int): number of walks per vertex
             - walk_length (int): random walk length
-            - optimizer (nn.Module): torch optimizer. should default to SGD as paper outlines.
             - seed (int): random seed. default set to 36.
         '''
         self.G = G
@@ -31,7 +31,6 @@ class DeepWalk:
         self.embedding_size = embedding_size
         self.walks_per_vertex = walks_per_vertex
         self.walk_length = walk_length
-        self.optimizer = optimizer
         self.seed = seed
 
     def _init_vertex_representations(self):
@@ -40,6 +39,8 @@ class DeepWalk:
         self.phi = torch.rand(
             size = (self.num_vertices, self.embedding_size)
         )
+        # From Section 4.2.3 in paper
+        self.optimizer = optim.SGD(params=self.phi, lr=0.025)
 
     def _construct_binary_tree(self):
         '''I feel like this is just an adjacancy matrix.'''
@@ -63,7 +64,8 @@ class DeepWalk:
                 SkipGram(self.phi, walk, self.win_size)
 
 # Used for debugging for now:
-# if __name__ == "__main__":
-#     G = Flickr('data/flickr')
-#     deepwalk = DeepWalk(G, 2, 1024, 10, 5)
-#     deepwalk.calculate_embeddings()
+if __name__ == "__main__":
+    G = Flickr('data/flickr')
+    optimizer = optim.SGD()
+    deepwalk = DeepWalk(G, 2, 1024, 10, 5, optimizer)
+    deepwalk.calculate_embeddings()
