@@ -54,10 +54,10 @@ class DeepWalk:
             O = self._shuffle()
             for vertex in O:
                 vertex = vertex.item() 
-                walk = self.random_walk.random_walk(self.edges, vertex)
+                walk = self.random_walk(self.edges, vertex)
 
-# Used for debugging for now:
-if __name__ == "__main__":
-    G = Flickr('data/flickr')
-    deepwalk = DeepWalk(G, 2, 1024, 10, 5)
-    deepwalk.calculate_embeddings()
+# # Used for debugging for now:
+# if __name__ == "__main__":
+#     G = Flickr('data/flickr')
+#     deepwalk = DeepWalk(G, 2, 1024, 10, 5)
+#     deepwalk.calculate_embeddings()
