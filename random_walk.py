@@ -18,17 +18,15 @@ class RandomWalk:
             - edge_list (torch.Tensor): tensor of edge list.   
             - vertex (int): vertex to begin walk from.
         '''
-        walk_len = 1
         # Instantiate walk path
         final_walk = [vertex]
 
-        while walk_len < self.walk_length:
+        while len(final_walk) < self.walk_length:
             # Get all connected nodes from vertex
             next_vertices_array = self.find_edges(edge_list, vertex)
             # Random choose
             vertex = random.choice(next_vertices_array).item() 
             final_walk.append(vertex) 
-            walk_len += 1
 
         return final_walk
 
