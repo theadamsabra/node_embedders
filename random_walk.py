@@ -1,5 +1,5 @@
-import torch
 import random
+
 class RandomWalk:
     def __init__(self, walks_per_vertex, walk_length) -> None:
         '''
@@ -43,6 +43,6 @@ class RandomWalk:
         dim1, dim2 = (edge_list == vertex).nonzero(as_tuple=True)
 
         # This means if we want to find all connections of vertex,
-        # we simply find the opposite of dim1 of the column of dim2:
+        # we simply find the opposite of dim1 in the column of dim2:
         path = edge_list[~dim1, dim2]
         return path

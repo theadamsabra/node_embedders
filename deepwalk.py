@@ -3,7 +3,6 @@ import torch_geometric
 from random_walk import RandomWalk
 from torch import nn
 from torch import optim
-from torch_geometric.datasets import Flickr
 
 class DeepWalk:
     def __init__(self, G, win_size, embedding_size, walks_per_vertex, walk_length, seed=36) -> None:
@@ -52,12 +51,7 @@ class DeepWalk:
         for walk_num in range(0, self.walks_per_vertex):
             # Shuffle V
             O = self._shuffle()
+            # Now walk through each vertex and update weights
             for vertex in O:
                 vertex = vertex.item() 
                 walk = self.random_walk(self.edges, vertex)
-
-# # Used for debugging for now:
-# if __name__ == "__main__":
-#     G = Flickr('data/flickr')
-#     deepwalk = DeepWalk(G, 2, 1024, 10, 5)
-#     deepwalk.calculate_embeddings()
