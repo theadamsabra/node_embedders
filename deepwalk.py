@@ -1,6 +1,8 @@
 import torch
 import torch_geometric
 from random_walk import RandomWalk
+from skipgram import SkipGram
+from torch_geometric.datasets import Flickr
 from torch import nn
 from torch import optim
 
@@ -25,6 +27,7 @@ class DeepWalk:
         self.walk_length = walk_length
         self.random_walk = RandomWalk(self.walks_per_vertex, self.walk_length)
         self.seed = seed
+        self.skipgram = SkipGram()
 
     def _init_vertex_representations(self):
         '''Initialize phi - or embedding matrix - to be optimized.'''
@@ -46,12 +49,20 @@ class DeepWalk:
     def calculate_embeddings(self):
         '''Main function run to calculate embedding matrix.'''
         self._init_vertex_representations()
-
         # Main loop in question:
         for walk_num in range(0, self.walks_per_vertex):
             # Shuffle V
             O = self._shuffle()
             # Now walk through each vertex and update weights
             for vertex in O:
+                # Get vertex in question and do random walk:
                 vertex = vertex.item() 
                 walk = self.random_walk(self.edges, vertex)
+                # Update phi with skipgram: 
+                self.phi = self.skipgram(self.phi, walk, self.win_size)
+
+# Used for debugging for now:
+if __name__ == "__main__":
+    G = Flickr('data/flickr')
+    deepwalk = DeepWalk(G, 2, 1024, 10, 5)
+    deepwalk.calculate_embeddings()
