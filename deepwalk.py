@@ -1,6 +1,7 @@
 import torch
 import torch_geometric
 from random_walk import RandomWalk
+from binary_tree import BinaryTree
 from skipgram import SkipGram
 from torch_geometric.datasets import Flickr
 from torch import nn
@@ -25,9 +26,10 @@ class DeepWalk:
         self.embedding_size = embedding_size
         self.walks_per_vertex = walks_per_vertex
         self.walk_length = walk_length
-        self.random_walk = RandomWalk(self.walks_per_vertex, self.walk_length)
         self.seed = seed
+        self.random_walk = RandomWalk(self.walks_per_vertex, self.walk_length)
         self.skipgram = SkipGram()
+        self.binary_tree = BinaryTree()
 
     def _init_vertex_representations(self):
         '''Initialize phi - or embedding matrix - to be optimized.'''
@@ -53,6 +55,7 @@ class DeepWalk:
         for walk_num in range(0, self.walks_per_vertex):
             # Shuffle V
             O = self._shuffle()
+            binary_tree = self.binary_tree.construct_binary_tree(O) 
             # Now walk through each vertex and update weights
             for vertex in O:
                 # Get vertex in question and do random walk:
@@ -64,5 +67,9 @@ class DeepWalk:
 # Used for debugging for now:
 if __name__ == "__main__":
     G = Flickr('data/flickr')
-    deepwalk = DeepWalk(G, 2, 1024, 10, 5)
+    win_size = 10
+    embedding_size = 128 
+    walks_per_vertex = 80
+    walk_len = 40
+    deepwalk = DeepWalk(G, win_size, embedding_size, walks_per_vertex, walk_len)
     deepwalk.calculate_embeddings()
