@@ -55,7 +55,7 @@ class DeepWalk:
         for walk_num in range(0, self.walks_per_vertex):
             # Shuffle V
             O = self._shuffle()
-            binary_tree = self.binary_tree.construct_binary_tree(O) 
+            binary_tree = self.binary_tree.construct_binary_tree(O)
             # Now walk through each vertex and update weights
             for vertex in O:
                 # Get vertex in question and do random walk:
