@@ -1,48 +1,46 @@
 import torch
-
+from copy import copy
 
 class BinaryTree:
-    def __init__(self) -> None:
-       self.node_count = {} 
+    def __init__(self, leaf_num:int) -> None:
+        self.decision = {0:1, 1:-1}
+        self.index = 0
 
-    def get_subtrees(self, tree):
-        yield tree
-        for subtree in tree:
-            if type(subtree) == list:
-                for sub_subtree in self.get_subtrees(subtree):
-                    yield sub_subtree
+        arr = []
+        arr2 = []
 
-    def generate_paths_of_leaves(self, tree):
-        '''
-        Generate the paths of leaves in the tree.
-        '''
+        for path, base, decision, leaf in self.get_decision(self.construct_binary_tree(leaf_num)):
+            tmp = torch.zeros((1, leaf_num-1)).type(torch.long) 
+            tmp2 = torch.ones((1, leaf_num-1)).type(torch.long)
+
+            tmp.put(
+                torch.Tensor(path).type(torch.long), 
+                torch.Tensor(decision).type(torch.long)
+            )
+
+            tmp2.put(
+                torch.Tensor(path).type(torch.long), 
+                torch.Tensor(base).type(torch.long)
+            )
+
+            arr.append(tmp)
+            arr2.append(tmp2)
+        
+        self.index = 0
+        self.decision = torch.Tensor(arr).to(torch.long)
+        self.base = torch.Tensor(arr2).to(torch.long)
+
+    def get_decision(self, tree):
+        tmp_i = self.index
+        self.index += 1
+
         for i, subtree in enumerate(tree):
             if type(subtree) == list:
-                # No shot python will support this reliably
-                for path, value in self.generate_paths_of_leaves(subtree): 
-                    yield [i] + path, value
+                for path, base, decision_list, value in self.get_decision(subtree):
+                    yield [tmp_i] + path, [i]+base, [self.decision[i]]+decision_list, value
             else:
-                yield [i], subtree
+                yield [tmp_i], [i], [self.decision[i]],subtree                     
 
-    def count_nodes(self, tree):
-        if id(tree) in self.node_count:
-            return self.node_count[id(tree)]
-
-        size = 0
-        for node in tree:
-            if type(node) == list:
-                size += 1 + self.count_nodes(node)               
-        
-        self.node_count[id(self.node_count)] = size
-        return size
-    
-    def get_nodes(self, tree, path):
-        next_node = 0
-        nodes = []
-        for decision in path:
-            nodes.append(next_node)
-            next_node += 1 + self.count_nodes(tree[:decision])
-        
     def construct_binary_tree(self, vertices) -> list:
         '''
         Construct binary tree from vertices.
@@ -54,6 +52,8 @@ class BinaryTree:
         Outputs:
             - binary_tree (list): binary tree output.
         ''' 
+        vertices = list(range(vertices))
+        vertices = copy(vertices)
         while len(vertices) > 2:
 
             tmp_outputs = []

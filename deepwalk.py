@@ -29,7 +29,7 @@ class DeepWalk:
         self.seed = seed
         self.random_walk = RandomWalk(self.walks_per_vertex, self.walk_length)
         self.skipgram = SkipGram()
-        self.binary_tree = BinaryTree()
+        self.binary_tree = BinaryTree(self.num_vertices)
 
     def _init_vertex_representations(self):
         '''Initialize phi - or embedding matrix - to be optimized.'''
@@ -62,7 +62,7 @@ class DeepWalk:
                 vertex = vertex.item() 
                 walk = self.random_walk(self.edges, vertex)
                 # Update phi with skipgram: 
-                self.phi = self.skipgram(self.phi, walk, self.win_size)
+                self.phi = self.skipgram(self.phi, walk, self.win_size,)
 
 # Used for debugging for now:
 if __name__ == "__main__":
