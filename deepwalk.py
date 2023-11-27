@@ -1,7 +1,7 @@
 import torch
 import torch_geometric
 from random_walk import RandomWalk
-from binary_tree import BinaryTree
+from binary_tree import construct_huffman_tree 
 from skipgram import SkipGram
 from torch_geometric.datasets import Flickr
 from torch import nn
@@ -29,7 +29,6 @@ class DeepWalk:
         self.seed = seed
         self.random_walk = RandomWalk(self.walks_per_vertex, self.walk_length)
         self.skipgram = SkipGram()
-        self.binary_tree = BinaryTree(self.num_vertices)
 
     def _init_vertex_representations(self):
         '''Initialize phi - or embedding matrix - to be optimized.'''
@@ -55,14 +54,14 @@ class DeepWalk:
         for walk_num in range(0, self.walks_per_vertex):
             # Shuffle V
             O = self._shuffle()
-            binary_tree = self.binary_tree.construct_binary_tree(O)
+            huffman_encoding = construct_huffman_tree(self.edges)
             # Now walk through each vertex and update weights
             for vertex in O:
                 # Get vertex in question and do random walk:
                 vertex = vertex.item() 
                 walk = self.random_walk(self.edges, vertex)
                 # Update phi with skipgram: 
-                self.phi = self.skipgram(self.phi, walk, self.win_size,)
+                self.phi = self.skipgram(self.phi, walk, self.win_size)
 
 # Used for debugging for now:
 if __name__ == "__main__":

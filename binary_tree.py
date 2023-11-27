@@ -1,68 +1,112 @@
-import torch
-from copy import copy
+# Copied over and updated for my use case from:
+# https://github.com/YCAyca/Data-Structures-and-Algorithms-with-Python/blob/main/Huffman_Encoding/huffman.py
 
-class BinaryTree:
-    def __init__(self, leaf_num:int) -> None:
-        self.decision = {0:1, 1:-1}
-        self.index = 0
+import multiprocessing
 
-        arr = []
-        arr2 = []
+# A Huffman Tree Node
+class Node:
+    def __init__( prob, symbol, left=None, right=None):
+        # probability of symbol
+        prob = prob
 
-        for path, base, decision, leaf in self.get_decision(self.construct_binary_tree(leaf_num)):
-            tmp = torch.zeros((1, leaf_num-1)).type(torch.long) 
-            tmp2 = torch.ones((1, leaf_num-1)).type(torch.long)
+        # symbol 
+        symbol = symbol
 
-            tmp.put(
-                torch.Tensor(path).type(torch.long), 
-                torch.Tensor(decision).type(torch.long)
-            )
+        # left node
+        left = left
 
-            tmp2.put(
-                torch.Tensor(path).type(torch.long), 
-                torch.Tensor(base).type(torch.long)
-            )
+        # right node
+        right = right
 
-            arr.append(tmp)
-            arr2.append(tmp2)
+        # tree direction (0/1)
+        code = ''
         
-        self.index = 0
-        self.decision = torch.Tensor(arr).to(torch.long)
-        self.base = torch.Tensor(arr2).to(torch.long)
+def update_symbols(symbols, element):
+    '''
+    Update symbols of elements.
 
-    def get_decision(self, tree):
-        tmp_i = self.index
-        self.index += 1
+    Inputs:
+        - symbols 
+        - element: one of the two vertices connected in edge.
+    '''
+    if symbols.get(element) == None:
+        symbols[element] = 1
+    else:
+        symbols[element] += 1
 
-        for i, subtree in enumerate(tree):
-            if type(subtree) == list:
-                for path, base, decision_list, value in self.get_decision(subtree):
-                    yield [tmp_i] + path, [i]+base, [self.decision[i]]+decision_list, value
-            else:
-                yield [tmp_i], [i], [self.decision[i]],subtree                     
+def calculate_probability(edges):
+    '''
+    Calculate probabilites of edges. Because this is used in a map function,
+    we simply map over one of the rows twice. Thus, we treat it as a 1D array.
+    
+    Inputs:
+        - edges (torch.Tensor): edge tensor of shape (2, num_edges)
+    '''
+    symbols = dict()
+    for i in range(edges.shape[-1]):
+        # Get elements and update symbols
+        element_1 = edges[i].item()
+        update_symbols(symbols, element_1)
 
-    def construct_binary_tree(self, vertices) -> list:
-        '''
-        Construct binary tree from vertices.
+        element_2 = edges[i].item()
+        update_symbols(symbols, element_2)
 
-        Inputs:
-            - vertices (torch.Tensor): flat tensor of shape (num_vertices, 1). Used
-            to construct the binary tree.
+    return symbols
 
-        Outputs:
-            - binary_tree (list): binary tree output.
-        ''' 
-        vertices = list(range(vertices))
-        vertices = copy(vertices)
-        while len(vertices) > 2:
+def calculate_codes(node, val=''):
+    codes = dict()
 
-            tmp_outputs = []
+    new_value = val + str(node.code)
+    if node.left:
+        calculate_codes(node.left, new_value)
+    if node.right:
+        calculate_codes(node.right, new_value)
+    if (not node.left and not node.right):
+        codes[node.symbol] = new_value
 
-            for i in range(0, len(vertices), 2):
-                if len(vertices) - (i+1) > 0:
-                    tmp_outputs.append([vertices[i], vertices[i+1]])
-                else:
-                    tmp_outputs.append(vertices[i])
-            vertices = tmp_outputs
+    return codes
 
-        return vertices
+def output_encoded(data, coding):
+    encoding_output = [coding[c] for c in data]
+    string = ''.join([str(item) for item in encoding_output])
+    return string
+
+def merge_nodes(nodes):
+    '''
+    Merge nodes function
+    '''
+    while len(nodes) > 1:
+        # Sort nodes
+        nodes = sorted(nodes, key=lambda x: x.prob)
+
+        # get 2 smallest nodes:
+        right = nodes[0]
+        left = nodes[1]
+
+        left.code = -1
+        right.code = 1
+
+        # combine 2 smallest nodes to create new node:
+        new_node = Node(left.prob + right.prob, left.symbol+right.symbol, left, right)
+        nodes.remove(left)
+        nodes.remove(right)
+        nodes.append(new_node)
+
+def construct_huffman_tree(edges):
+    pool = multiprocessing.Pool()
+    # Get probabilites:
+    symbols = pool.map(calculate_probability, edges)
+    # Update symbols to be one mapping:
+
+    # Get symbols to construct nodes:        
+    symbs = symbols.keys()
+    nodes = []
+    for symbol in symbs:
+        nodes.append(Node(symbols.get(symbol), symbol))
+
+    # Merge nodes: 
+    pool.map(merge_nodes)
+
+    # Get encoding and return it:
+    huffman_encoding = calculate_codes(nodes[0])
+    return huffman_encoding
