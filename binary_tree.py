@@ -5,21 +5,21 @@ import multiprocessing
 
 # A Huffman Tree Node
 class Node:
-    def __init__( prob, symbol, left=None, right=None):
+    def __init__(self, prob, symbol, left=None, right=None):
         # probability of symbol
-        prob = prob
+        self.prob = prob
 
         # symbol 
-        symbol = symbol
+        self.symbol = symbol
 
         # left node
-        left = left
+        self.left = left
 
         # right node
-        right = right
+        self.right = right
 
         # tree direction (0/1)
-        code = ''
+        self.code = ''
         
 def update_symbols(symbols, element):
     '''
@@ -83,6 +83,8 @@ def merge_nodes(nodes):
         right = nodes[0]
         left = nodes[1]
 
+        # We use -1 for left code as per equation 3 of
+        # https://papers.nips.cc/paper_files/paper/2013/file/9aa42b31882ec039965f3c4923ce901b-Paper.pdf
         left.code = -1
         right.code = 1
 
@@ -91,13 +93,33 @@ def merge_nodes(nodes):
         nodes.remove(left)
         nodes.remove(right)
         nodes.append(new_node)
+    
+    return nodes
+
+def merge_symbols_dict(symbols:list) -> dict:
+    '''
+    Merge symbols into one dictionary.
+    '''
+    # Get count of each node of each row:
+    dict_1, dict_2 = symbols[0], symbols[1] 
+    assert len(dict_1) == len(dict_2)
+
+    merged_dict = {}
+    # Merge into one dict:
+    for i in range(len(dict_1)):
+        merged_dict[i] = dict_1[i] + dict_2[i]
+
+    return merged_dict
 
 def construct_huffman_tree(edges):
+    # Set up multiprocessing tools:
     pool = multiprocessing.Pool()
+    lock = multiprocessing.Lock()
+
     # Get probabilites:
     symbols = pool.map(calculate_probability, edges)
     # Update symbols to be one mapping:
-
+    symbols = merge_symbols_dict(symbols)
     # Get symbols to construct nodes:        
     symbs = symbols.keys()
     nodes = []
@@ -105,8 +127,8 @@ def construct_huffman_tree(edges):
         nodes.append(Node(symbols.get(symbol), symbol))
 
     # Merge nodes: 
-    pool.map(merge_nodes)
-
+    nodes = multiprocessing.Process(merge_nodes, args=(lock, nodes)).start()
+    nodes = merge_nodes(nodes)
     # Get encoding and return it:
     huffman_encoding = calculate_codes(nodes[0])
     return huffman_encoding
