@@ -8,34 +8,22 @@ class SkipGram:
     def __init__(self) -> None:
         pass
     
-    def __call__(self, phi, walk, win_size) -> torch.Tensor:
+    def __call__(self, phi, walk, win_size, tree) -> torch.Tensor:
         '''
         Core SkipGram algorithm.
         Inputs:
-            - phi (torch.nn.Embedding): embedding matrix of size (num_vertices, embedding_dim)
+            - phi (torch.nn.Embedding): embedding matrix of size (num_vertices, embedding_dim). This will be the final embedding matrix.
             - walk (list): random walk path.
             - win_size (int): window size.
+            - tree (binary_tree.Tree object): binary tree representation of graph.
         '''
         for j, v_j in enumerate(walk):
-            # Get embedding of node
-            phi_vk = self._get_embedding(phi, v_j)
 
             for u_k in walk[j-win_size:j+win_size]:
+
                 # Factor out u_k and get probability:
-                phi_uk = self._get_embedding(phi, u_k) 
+                nodes = tree.getNodeList(u_k) 
 
                 print(u_k)
         
-        return phi
-    
-    def _get_embedding(self, phi, vertex):
-        '''
-        Get embedding of vertex.
-        Inputs:
-            - phi (torch.nn.Embedding): embedding matrix of size (num_vertices, embedding_dim)
-            - vertex (int): vertex number
-        Outputs:
-            - vertex_embedding (torch.Tensor): embedding representation of vertex.
-        '''
-        vertex_tensor = torch.Tensor([vertex]).type(torch.long)
-        return phi(vertex_tensor)
+        return phi 
