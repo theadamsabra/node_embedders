@@ -11,7 +11,7 @@ class Node(object):
     def __init__(self, embedding_size, phi=None):
         self.left=None
         self.child={'0':None, '1':None} # direc['0']: left child, else right child
-        self.Phi = torch.randn(1, embedding_size)
+        self.Phi = torch.randn(embedding_size, 1)
 
 class Tree(object):
     def __init__(self, whole_size, embedding_size):

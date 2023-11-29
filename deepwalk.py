@@ -28,29 +28,18 @@ class DeepWalk:
         self.walk_length = walk_length
         self.seed = seed
         self.random_walk = RandomWalk(self.walks_per_vertex, self.walk_length)
-        self._init_vertex_representations()
         # Construct tree and grow it:
         self.tree = Tree(self.num_vertices, self.embedding_size) 
         self.tree.growTree()
-        self.skipgram = SkipGram()
-
-    def _init_vertex_representations(self):
-        '''Initialize phi - or embedding matrix - to be optimized.'''
-        torch_geometric.seed_everything(self.seed) 
-        self.phi = nn.Embedding(
-            num_embeddings=self.num_vertices,
-            embedding_dim=self.embedding_size
+        self.phi = torch.randn(
+            size=(self.num_vertices, self.embedding_size)
         )
-        self.phi.weight.data = torch.rand(
-            size = (self.num_vertices, self.embedding_size)
-        )
-        # From Section 4.2.3 in paper
-        self.optimizer = optim.SGD(params=self.phi.parameters(), lr=0.025)
+        self.skipgram = SkipGram(self.tree, self.phi)
 
     def _shuffle(self):
         '''Shuffle vertices'''
         return torch.randperm(self.num_vertices) 
-
+    
     def calculate_embeddings(self):
         '''Main function run to calculate embedding matrix.'''
         # Main loop in question:
@@ -64,7 +53,7 @@ class DeepWalk:
                 vertex = vertex.item() 
                 walk = self.random_walk(self.edges, vertex)
                 # Update phi with skipgram: 
-                self.phi = self.skipgram(self.phi, walk, self.win_size, self.tree)
+                self.phi = self.skipgram(walk, self.win_size)
 
 # Used for debugging for now:
 if __name__ == "__main__":
