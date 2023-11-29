@@ -55,6 +55,8 @@ class DeepWalk:
                 # Update phi with skipgram: 
                 self.phi = self.skipgram(walk, self.win_size)
 
+            self.losses = self.skipgram.losses
+
 # Used for debugging for now:
 if __name__ == "__main__":
     G = Flickr('data/flickr')
