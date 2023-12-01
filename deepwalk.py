@@ -1,9 +1,8 @@
 import torch
 import math
-from concurrent.futures import ProcessPoolExecutor
+import multiprocessing as mp
 from gensim.models import Word2Vec
 from random_walk import RandomWalk
-from torch_geometric.seed import seed_everything
 from torch_geometric.datasets import Flickr
 
 class DeepWalk:
@@ -28,7 +27,6 @@ class DeepWalk:
         self.embedding_size = embedding_size
         self.walks_per_vertex = walks_per_vertex
         self.walk_length = walk_length
-        self.seed = seed
         self.random_walk = RandomWalk(self.walks_per_vertex, self.walk_length)
         self.num_workers = num_workers
         self.percent_data = percent_data
@@ -37,40 +35,31 @@ class DeepWalk:
             window=self.win_size,
             workers=self.num_workers,
             sg=1, # Default sg to 1 to leverage SkipGram and not CBOW
-            hs=1 # Default hs to 1 to leverage Hierarchical Softmax
+            hs=1, # Default hs to 1 to leverage Hierarchical Softmax
+            min_count=1
         )
 
     def _shuffle(self, num_vertices):
         '''Shuffle vertices'''
         return torch.randperm(num_vertices) 
 
-    def random_walk_vertex(self, vertex):
-        vertex = vertex.item()
-        walk = self.random_walk(self.edges, vertex)
-        return walk
-
-    def construct_all_walks(self, sampled_nodes):
+    def construct_all_walks(self, O):
         '''
-        Construct all random walks and save as method.
+        Construct all random walks.
         
         Inputs:
-            - sampled_nodes (torch.Tensor):
+            - O (torch.Tensor): shuffled vertices.
         '''
-        # Number of walks per vertex
-        all_walks = []
-
-        for _ in range(0, self.walks_per_vertex):
-            # Shuffle V
-            O = sampled_nodes[self._shuffle(len(sampled_nodes))]
-            # Get all walks
-            walks = [self.random_walk_vertex(vertex) for vertex in O]
-            all_walks.append(walks)
-
-        return all_walks 
+        # Get all walks:
+        walks = [self.random_walk(self.edges, vertex.item()) for vertex in O]
+        return walks 
 
     def sample_from_graph(self) -> torch.Tensor:
         '''
         Update attributes as subsample of graph.
+        
+        Outputs:
+            - sampled_nodes (torch.Tensor): sampled nodes from graph.
         '''
         # Randomly select the data we sample
         num_sampled = math.ceil(self.num_vertices * self.percent_data)
@@ -78,23 +67,38 @@ class DeepWalk:
         sampled_nodes = shuffled_indices[:num_sampled]
         return sampled_nodes
 
-    def calculate_embeddings(self):
-        # Seed everything for reproducibility
-        seed_everything(self.seed) 
+    def construct_accesible_weights(self):
+        '''
+        Parse out relevant information for easily accessible weights.
+        '''
+        self.trained_vertices = self.skipgram.wv.index_to_key
+        self.trained_weights = self.skipgram.syn1
 
-        # Sample from graph
+    def calculate_embeddings(self):
+        # Sample from graph:
         sampled_nodes = self.sample_from_graph()
 
-        # Construct all walks and run it in parallel:
-        all_walks = self.construct_all_walks(sampled_nodes)
-        pass
+        # Shuffle vertices and construct all walks:
+        O = sampled_nodes[self._shuffle(len(sampled_nodes))]
+        all_walks = self.construct_all_walks(O)
+
+        self.skipgram.build_vocab(corpus_iterable=all_walks)
+
+        self.skipgram.train(
+            corpus_iterable=all_walks,
+            total_examples=self.skipgram.corpus_count,
+            epochs=self.walks_per_vertex
+        )
+        
+        # Once we're good with training, make everything easily accessible 
+        self.construct_accesible_weights()
 
 # Used for debugging for now:
 if __name__ == "__main__":
     G = Flickr('data/flickr')
     win_size = 10
     embedding_size = 128 
-    walks_per_vertex = 80
+    walks_per_vertex = 1
     walk_len = 40
     num_workers = 16
     percent_data = 0.01

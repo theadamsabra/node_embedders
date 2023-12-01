@@ -19,14 +19,14 @@ class RandomWalk:
             - vertex (int): vertex to begin walk from.
         '''
         # Instantiate walk path
-        final_walk = [vertex]
+        final_walk = [str(vertex)]
 
         while len(final_walk) < self.walk_length:
             # Get all connected nodes from vertex
             next_vertices_array = self.find_edges(edge_list, vertex)
             # Random choose
             vertex = random.choice(next_vertices_array).item() 
-            final_walk.append(vertex) 
+            final_walk.append(str(vertex)) 
 
         return final_walk
 
