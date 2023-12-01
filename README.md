@@ -5,7 +5,15 @@ Unofficial implementaion of [Deepwalk: Online Learning of Social Representations
 
 ## Usage
 
-To calculate embeddings, leveraging the template code is sufficient.
+First, setup your python environment:
+
+```bash
+conda create -n deepwalk
+conda activate deepwalk
+pip install -r requirements.txt
+```
+
+Then, to calculate embeddings, leveraging the template code is sufficient.
 
 ```python
 G = Flickr() # G can be any dataset from torch_geometric.datasets
