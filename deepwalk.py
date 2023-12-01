@@ -92,15 +92,3 @@ class DeepWalk:
         
         # Once we're good with training, make everything easily accessible 
         self.construct_accesible_weights()
-
-# Used for debugging for now:
-if __name__ == "__main__":
-    G = Flickr('data/flickr')
-    win_size = 10
-    embedding_size = 128 
-    walks_per_vertex = 1
-    walk_len = 40
-    num_workers = 16
-    percent_data = 0.01
-    deepwalk = DeepWalk(G, win_size, embedding_size, walks_per_vertex, walk_len, num_workers, percent_data)
-    deepwalk.calculate_embeddings()
