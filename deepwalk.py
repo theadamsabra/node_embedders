@@ -79,16 +79,18 @@ class DeepWalk:
         sampled_nodes = self.sample_from_graph()
 
         # Shuffle vertices and construct all walks:
-        O = sampled_nodes[self._shuffle(len(sampled_nodes))]
-        all_walks = self.construct_all_walks(O)
+        for i in range(self.walks_per_vertex):
+            O = sampled_nodes[self._shuffle(len(sampled_nodes))]
+            all_walks = self.construct_all_walks(O)
 
-        self.skipgram.build_vocab(corpus_iterable=all_walks)
+            update = False if i == 0 else True 
+            self.skipgram.build_vocab(corpus_iterable=all_walks, update=update)
 
-        self.skipgram.train(
-            corpus_iterable=all_walks,
-            total_examples=self.skipgram.corpus_count,
-            epochs=self.walks_per_vertex
-        )
+            self.skipgram.train(
+                corpus_iterable=all_walks,
+                total_examples=self.skipgram.corpus_count,
+                epochs=1 # doesn't default automatically for some reason
+            )
         
         # Once we're good with training, make everything easily accessible 
         self.construct_accesible_weights()
