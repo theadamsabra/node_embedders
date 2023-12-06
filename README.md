@@ -19,7 +19,7 @@ Then, to calculate embeddings, leveraging the template code is sufficient.
 from deepwalk import DeepWalk
 from torch_geometric.datasets import Flickr
 
-G = Flickr() # G can be any dataset from torch_geometric.datasets
+G = Flickr(root='path/to/dataset') # G can be any dataset from torch_geometric.datasets
 win_size = 10
 embedding_size = 128 
 walks_per_vertex = 80
