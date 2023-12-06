@@ -16,6 +16,9 @@ pip install -r requirements.txt
 Then, to calculate embeddings, leveraging the template code is sufficient.
 
 ```python
+from deepwalk import DeepWalk
+from torch_geometric.datasets import Flickr
+
 G = Flickr() # G can be any dataset from torch_geometric.datasets
 win_size = 10
 embedding_size = 128 
