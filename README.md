@@ -1,15 +1,15 @@
-# Deepwalk Implementation
+# Node Embedders
 
-Unofficial implementaion of [Deepwalk: Online Learning of Social Representations](https://arxiv.org/pdf/1403.6652.pdf).
+Unofficial implementation of [Deepwalk: Online Learning of Social Representations](https://arxiv.org/pdf/1403.6652.pdf) and [node2vec: Scalable Feature Learning for Networks](https://arxiv.org/pdf/1607.00653.pdf)
 
 
 ## Usage
 
-First, setup your python environment:
+First, setup the python environment:
 
 ```bash
-conda create -n deepwalk
-conda activate deepwalk
+conda create -n node-embedders
+conda activate node-embedders
 pip install -r requirements.txt
 ```
 
