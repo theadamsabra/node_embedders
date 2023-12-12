@@ -5,7 +5,7 @@ from gensim.models import Word2Vec
 from random_walk import RandomWalk
 from torch_geometric.datasets import Flickr
 
-class DeepWalk:
+class NodeEmbedder:
     def __init__(self, G, win_size, embedding_size, walks_per_vertex, \
                  walk_length, num_workers, percent_data, seed=36) -> None:
         '''
