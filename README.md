@@ -16,7 +16,7 @@ pip install -r requirements.txt
 Then, to calculate embeddings, leveraging the template code is sufficient.
 
 ```python
-from deepwalk import DeepWalk
+from node_embedder import NodeEmbedder 
 from torch_geometric.datasets import Flickr
 
 G = Flickr(root='path/to/dataset') # G can be any dataset from torch_geometric.datasets
@@ -33,7 +33,6 @@ deepwalk.calculate_embeddings()
 After calculating the embeddings, you can access which vertices have been used as well as their embeddings using the following:
 
 ```python
-trained_vertices = deepwalk.trained_vertices # list containing all unique vertices seen in training 
-
-trained_weights = deepwalk.trained_weights # weights of each vertex in trained_vertices (in order.)
+trained_vertices = deepwalk.trained_vertices # list containing all unique vertices seen in training (in order of node index.) 
+trained_weights = deepwalk.trained_weights # weights of each vertex in trained_vertices (in same order of trained_vertices.)
 ```

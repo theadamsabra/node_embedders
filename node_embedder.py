@@ -9,7 +9,7 @@ class NodeEmbedder:
     def __init__(self, G, win_size, embedding_size, walks_per_vertex, \
                  walk_length, num_workers, percent_data, seed=36) -> None:
         '''
-        Core DeepWalk class. 
+        Core Node embedder class. 
         Inputs:
             - G (torch_geometric.data.Data): torch geometric data object.   
             - win_size (int): window size
@@ -71,8 +71,12 @@ class NodeEmbedder:
         '''
         Parse out relevant information for easily accessible weights.
         '''
-        self.trained_vertices = self.skipgram.wv.index_to_key
-        self.trained_weights = self.skipgram.syn1
+        # Trained vertices may or may not be in order:
+        # Let's ensure they are and shuffle the embeddings accordingly:
+        tmp_vertices = torch.Tensor([int(i) for i in self.skipgram.wv.index_to_key])
+        i = torch.argsort(tmp_vertices)
+        self.trained_vertices = tmp_vertices[i]
+        self.trained_weights = torch.from_numpy(self.skipgram.syn1)[i,:]
 
     def calculate_embeddings(self):
         # Sample from graph:
