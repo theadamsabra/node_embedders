@@ -26,7 +26,7 @@ walks_per_vertex = 80
 walk_len = 40
 num_workers = 16
 percent_data = 0.01
-deepwalk = DeepWalk(G, win_size, embedding_size, walks_per_vertex, walk_len, num_workers, percent_data)
+deepwalk = NodeEmbedder(G, win_size, embedding_size, walks_per_vertex, walk_len, num_workers, percent_data)
 deepwalk.calculate_embeddings()
 ```
 
