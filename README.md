@@ -1,6 +1,6 @@
 # Node Embedders
 
-Unofficial implementation of [Deepwalk: Online Learning of Social Representations](https://arxiv.org/pdf/1403.6652.pdf) and [node2vec: Scalable Feature Learning for Networks](https://arxiv.org/pdf/1607.00653.pdf)
+Unofficial implementation of [Deepwalk: Online Learning of Social Representations](https://arxiv.org/pdf/1403.6652.pdf) and [node2vec: Scalable Feature Learning for Networks](https://arxiv.org/pdf/1607.00653.pdf). The ultimate objective of this repository is to implement a torch-geometric friendly node embedder tool.
 
 
 ## Usage
